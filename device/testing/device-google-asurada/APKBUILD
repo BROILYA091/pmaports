@@ -1,0 +1,40 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: Jenneron <jenneron@protonmail.com>
+pkgname=device-google-asurada
+pkgdesc="Google Asurada Chromebooks"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	alsa-ucm-conf
+	depthcharge-tools
+	linux-postmarketos-mediatek-mt81xx
+	postmarketos-base
+	postmarketos-cros-common
+	soc-mediatek-mt8183
+"
+makedepends="devicepkg-dev"
+source="deviceinfo modules-initfs"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="WiFi/BT firmware"
+	depends="linux-firmware-mediatek linux-firmware-rtw88"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+181faa71684361dbdcd49f2d16786ce8cd2366814f54a18c9e9caa989529ccc045713688d822a053959f88382a716622232276acf68d2f95597ac307ddf2240c  deviceinfo
+d90b91bd2bb409941878ebadf8d28ef66406edb64cbcac99443c3e0c072801ba94ec9fa3b551f59b8a27a33c7a34f511604bd30328195fc261f927d87138801d  modules-initfs
+"

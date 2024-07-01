@@ -1,0 +1,39 @@
+# Reference: https://postmarketos.org/uipkg
+# Maintainer: Oliver Smith <ollieparanoid@postmarketos.org>
+pkgname=postmarketos-ui-gnome
+pkgver=3
+pkgrel=9
+pkgdesc="(Wayland) Gnome Shell"
+url="https://gnome.org/"
+# armhf blocked by gnome-shell -> gjs -> mozjs102
+arch="noarch !armhf"
+license="GPL-3.0-or-later"
+depends="
+	!gnome-shell-mobile
+	!gnome-shell-mobile-schemas
+	!mutter-mobile
+	!mutter-mobile-schemas
+	gdm
+	gnome
+	postmarketos-base-ui-gnome
+	"
+_pmb_recommends="
+	gnome-calendar
+	gnome-disk-utility
+	gnome-extensions-app
+	gnome-system-monitor
+	nautilus
+	snapshot
+	"
+install="$pkgname.post-install $pkgname.post-upgrade"
+source="firefox-wayland.sh"
+options="!check"
+
+package() {
+	install -Dm755 \
+		"$srcdir"/firefox-wayland.sh \
+		-t "$pkgdir"/etc/profile.d/
+}
+sha512sums="
+0d9ec58be7dc354e181989c7f08e7d4dd93fefd06a99e784b87fe898479dd47a40dfa9689c6a63ebdc04bf87883a270686aec27f7cc34cb21ec0f370a4afe2d8  firefox-wayland.sh
+"

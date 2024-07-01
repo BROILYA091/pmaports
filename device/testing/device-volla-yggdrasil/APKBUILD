@@ -1,0 +1,29 @@
+# Maintainer: Jami Kettunen <jami.kettunen@protonmail.com>
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-volla-yggdrasil
+pkgdesc="Volla Phone"
+pkgver=2
+pkgrel=1
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-postmarketos-mediatek-mt6763
+	mkbootimg
+	postmarketos-base
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+36d82e33787a11872f539943ef154d19591baefda003087d3ba4d947faccf07231ebf76a072ce7183f2a572a59c4064922f67e875e887619c849f7a9e3418e7a  deviceinfo
+"

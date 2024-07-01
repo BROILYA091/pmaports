@@ -1,0 +1,68 @@
+# Maintainer: Alexey Minnekhanov <alexeymin@postmarketos.org>
+# Kernel config based on: arch/arm64/configs/sdm660_defconfig
+
+_flavor="postmarketos-qcom-sdm660"
+pkgname=linux-$_flavor
+pkgver=6.9.3
+pkgrel=0
+pkgdesc="Close to mainline linux kernel for Qualcomm Snapdragon 660 SoC"
+arch="aarch64"
+url="https://kernel.org/"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+	"
+makedepends="
+	bash
+	bison
+	findutils
+	flex
+	openssl-dev
+	perl
+	postmarketos-installkernel
+	"
+
+_tag="v$pkgver-sdm660"
+
+source="
+	linux-$_tag.tar.gz::https://github.com/sdm660-mainline/linux/archive/refs/tags/$_tag.tar.gz
+	config-$_flavor.aarch64
+"
+
+_carch="arm64"
+
+# for some reason, the directory inside .tar.gz does not match tag name: leading
+#     "v" is missing, so we can't use $_tag here
+builddir="$srcdir/linux-$pkgver-sdm660"
+
+prepare() {
+	default_prepare
+	cp -v "$srcdir/config-$_flavor.$CARCH" "$builddir"/.config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-$_flavor"
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+
+	make zinstall modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_PATH="$pkgdir"/boot \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_DTBS_PATH="$pkgdir/boot/dtbs"
+	rm -f "$pkgdir"/lib/modules/*/build "$pkgdir"/lib/modules/*/source
+
+	install -D "$builddir/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+}
+
+sha512sums="
+ebe70e1364efa99f70e4a3725c42ea94e1c3834ffdec416a5eac8081c02489768d52525dfedaa0f65524d8082b910e647efae30d0795ea683284fcb20d532016  linux-v6.9.3-sdm660.tar.gz
+a297e724072ccc2651e509726bfbd67fc833c205fff6aee0a9d150b6ac5bd5d4615d28586aa8dd14b075d31ea6056213347a46e9b04c53a2fdecabff1f3501bf  config-postmarketos-qcom-sdm660.aarch64
+"

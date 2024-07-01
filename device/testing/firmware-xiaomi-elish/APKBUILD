@@ -1,0 +1,80 @@
+pkgname=firmware-xiaomi-elish
+pkgver=20240109
+pkgrel=0
+pkgdesc="Firmware for Xiaomi Mi Pad 5 Pro"
+subpackages="
+	$pkgname-adreno
+	$pkgname-adsp
+	$pkgname-cdsp
+	$pkgname-cirrus
+	$pkgname-slpi
+	$pkgname-touchscreen
+	$pkgname-venus
+	"
+url="https://github.com/lujianhua/xiaomi-elish-firmware"
+arch="aarch64"
+license="proprietary"
+options="!check !strip !archcheck !tracedeps pmb:cross-native"
+_commit="013b45d1fe64a392c94dc6c58aba72c791be6209"
+source="https://github.com/lujianhua/xiaomi-elish-firmware/archive/$_commit/xiaomi-elish-firmware-$_commit.tar.gz"
+builddir="$srcdir/xiaomi-elish-firmware-$_commit"
+
+package() {
+	# parent package is empty
+	mkdir -p "$pkgdir"
+}
+
+# Xiaomi elish boots with secure boot, it can only load signed firmwares.
+adreno() {
+	pkgdesc="Xiaomi elish adreno firmware"
+	depends="firmware-qcom-adreno-a650"
+
+	install -Dm644 "$builddir"/sm8250/a650_zap.mbn -t \
+		"$subpkgdir/lib/firmware/qcom/sm8250/xiaomi/elish/"
+}
+
+adsp() {
+	pkgdesc="Xiaomi elish adsp firmware"
+
+	install -Dm644 "$builddir"/sm8250/adsp* -t \
+		"$subpkgdir/lib/firmware/qcom/sm8250/xiaomi/elish/"
+}
+
+cdsp() {
+	pkgdesc="Xiaomi elish cdsp firmware"
+
+	install -Dm644 "$builddir"/sm8250/cdsp* -t \
+		"$subpkgdir/lib/firmware/qcom/sm8250/xiaomi/elish/"
+}
+
+cirrus() {
+	pkgdesc="Xiaomi elish cirrus firmware"
+
+	install -Dm644 "$builddir"/cirrus/cs35l41* -t \
+		"$subpkgdir/lib/firmware/cirrus/"
+}
+
+slpi() {
+	pkgdesc="Xiaomi elish slpi firmware"
+
+	install -Dm644 "$builddir"/sm8250/slpi* -t \
+		"$subpkgdir/lib/firmware/qcom/sm8250/xiaomi/elish/"
+}
+
+touchscreen() {
+	pkgdesc="Xiaomi elish touchscreen firmware"
+
+	install -Dm644 "$builddir"/novatek/nt36523* -t \
+		"$subpkgdir/lib/firmware/novatek/"
+}
+
+venus() {
+	pkgdesc="Xiaomi elish venus firmware"
+
+	install -Dm644 "$builddir"/sm8250/venus.mbn -t \
+		"$subpkgdir/lib/firmware/qcom/sm8250/xiaomi/elish/"
+}
+
+sha512sums="
+0581361b9b376ed52798622e337294933b81b594ab7fb223668531e297acc977ce5b6770a0ee5bf7382c1989a6e4d64184f5ce937ea6cb9171e6b4a5bbc7ff16  xiaomi-elish-firmware-013b45d1fe64a392c94dc6c58aba72c791be6209.tar.gz
+"

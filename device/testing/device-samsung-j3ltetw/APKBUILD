@@ -1,0 +1,39 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-samsung-j3ltetw
+pkgdesc="Samsung Galaxy J3 (2016)"
+pkgver=3
+pkgrel=1
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	postmarketos-base
+	mkbootimg
+	linux-postmarketos-qcom-msm8916
+	soc-qcom-msm8916
+	soc-qcom-msm8916-rproc
+"
+makedepends="devicepkg-dev"
+source="deviceinfo modules-initfs"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+_pmb_select="soc-qcom-msm8916-rproc"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="GPU/WiFi/BT/Video(/Modem) firmware"
+	depends="firmware-qcom-adreno-a300 msm-firmware-loader firmware-samsung-j3ltetw-wcnss-nv"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+985c203e4af9d6c9d04773233d2e38366b1101ef8c70435e1514f00522726238033ef0b6db6d901589469530ac70a78f3c582e5ae0195dcfba361e744b64d972  deviceinfo
+27839a3da5c8b17516f64e0f7c38af2f502379553643a23834038cebd8ef47ea8d321fe796f99715102ce92f70a9fe0cb97062624a3589b98696154bfd7a4514  modules-initfs
+"

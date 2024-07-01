@@ -1,0 +1,59 @@
+# Maintainer: Luca Weiss <luca@lucaweiss.eu>
+
+_flavor="postmarketos-qcom-sc7280"
+pkgname=linux-$_flavor
+pkgver=6.9.0
+pkgrel=1
+pkgdesc="Mainline Kernel fork for SC7280/SM7325/QCM6490 devices"
+arch="aarch64"
+_carch="arm64"
+url="https://github.com/sc7280-mainline/linux"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+	"
+makedepends="bash bison findutils flex installkernel openssl-dev perl"
+
+_repo="linux"
+_config="config-$_flavor.$arch"
+_tag="v$pkgver-sc7280"
+
+# Source
+source="
+	https://github.com/sc7280-mainline/$_repo/archive/refs/tags/$_tag/$_repo-$_tag.tar.gz
+	$_config
+"
+builddir="$srcdir/$_repo-$pkgver-sc7280"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/config-$_flavor.$arch" .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-$_flavor"
+}
+
+package() {
+	install -Dm644 "$builddir/arch/$_carch/boot/Image.gz" \
+		"$pkgdir/boot/vmlinuz"
+
+	make modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_PATH="$pkgdir"/boot/ \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_DTBS_PATH="$pkgdir"/boot/dtbs
+	rm -f "$pkgdir"/lib/modules/*/build "$pkgdir"/lib/modules/*/source
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="
+c0c1cddf6dc13b8b8657ebbfec822169ee877f78f5955ad9c050e4e854e18f805a18ce0740b5fdf9051541ee4136ac9fb488a0ed76d5585759c281af4d317cf5  linux-v6.9.0-sc7280.tar.gz
+24603d18da76626831641f1d9cee455935611e5971b3b9970bc8c52dc1ebcf76a6b5e945eb96a017871789931e29f61a49e6c33e8bb80a51e6a2fdd4a2635d21  config-postmarketos-qcom-sc7280.aarch64
+"

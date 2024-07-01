@@ -1,0 +1,40 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: Raymond Hackley <raymondhackley@protonmail.com>
+pkgname=device-samsung-j5
+pkgdesc="Samsung Galaxy J5 (2015)"
+pkgver=6
+pkgrel=2
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-postmarketos-qcom-msm8916
+	mkbootimg
+	postmarketos-base
+	soc-qcom-msm8916
+	soc-qcom-msm8916-rproc
+"
+makedepends="devicepkg-dev"
+source="deviceinfo modules-initfs"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+_pmb_select="soc-qcom-msm8916-rproc"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="GPU/WiFi/BT/Modem/Video firmware"
+	depends="firmware-qcom-adreno-a300 msm-firmware-loader firmware-samsung-j5-wcnss-nv"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+480a84da82ec9836dd5c1242d1738f278d79608ee909afd67bb9ae93eceef1a97da2ee2dfb3c69a739c68bb09a357dda50e42ef07ec52524573d636d34583dd0  deviceinfo
+27839a3da5c8b17516f64e0f7c38af2f502379553643a23834038cebd8ef47ea8d321fe796f99715102ce92f70a9fe0cb97062624a3589b98696154bfd7a4514  modules-initfs
+"

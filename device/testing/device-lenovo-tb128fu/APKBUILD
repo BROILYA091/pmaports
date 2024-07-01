@@ -1,0 +1,28 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-lenovo-tb128fu
+pkgdesc="Lenovo Xiaoxin Pad 2022"
+pkgver=1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-postmarketos-qcom-sm6225
+	mkbootimg
+	postmarketos-base
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+a803f47dd0713e4e3cd3c84240f310bad3484ff88882b280010cfe89a4d415fdc0c992de8cb32f49b6a06a799b75d69af860673f5d4d9eea92324033842af6a0  deviceinfo
+"

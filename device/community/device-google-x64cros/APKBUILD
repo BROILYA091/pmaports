@@ -1,0 +1,61 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: JustSoup321 <brandonboese@protonmail.com>
+# Co-Maintainer: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+# Co-Maintainer: Jenneron <jenneron@protonmail.com>
+pkgname=device-google-x64cros
+pkgdesc="Google Chromebooks with x64 CPU"
+pkgver=8
+pkgrel=1
+url="https://postmarketos.org"
+license="MIT"
+arch="x86_64"
+options="!check !archcheck"
+depends="
+	alsa-ucm-conf-cros
+	depthcharge-tools
+	postmarketos-base
+	postmarketos-cros-common
+	postmarketos-initramfs-minimal
+	systemd-boot
+	"
+makedepends="devicepkg-dev"
+install="$pkgname.post-install $pkgname.post-upgrade"
+subpackages="
+	$pkgname-kernel-lts:kernel_lts
+	$pkgname-kernel-edge:kernel_edge
+	"
+source="deviceinfo modules-initfs"
+# TODO: package iwlwifi-7265D-29.ucode separetely, so we don't depend
+# on linux-firmware-other
+_pmb_recommends="
+	linux-firmware-other
+	linux-firmware-rtl_nic
+	linux-firmware-rtw88
+	oem-intel
+	oem-amd
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+kernel_edge() {
+	pkgdesc="Alpine Edge kernel"
+	depends="linux-edge"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+kernel_lts() {
+	pkgdesc="Alpine LTS kernel"
+	depends="linux-lts"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+sha512sums="
+6ab370ce8de6ce77d255ad347563afa8314bdde1d54ba51970de3b3739bb52098284beead99485e416c9af5c8b53811f5286c1cd561896480526a892f982bdad  deviceinfo
+1b3bbfcdc6642488304653aef996dddf7a354e7279f2c735ac7aec404e598948423630fcaa2cac87e2c0aef033ecfc57a7a91154f9dac9a85411db7bad62e677  modules-initfs
+"

@@ -1,0 +1,34 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: Newbyte <newbyte@disroot.org>
+pkgname=device-htc-m8qlul
+pkgdesc="HTC One M8s"
+pkgver=1
+pkgrel=1
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="postmarketos-base mkbootimg soc-qcom-msm8939 linux-postmarketos-qcom-msm8939"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+subpackages="
+	$pkgname-nonfree-firmware:nonfree_firmware
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="GPU/WiFi/BT/Video(/Modem) firmware"
+	depends="linux-firmware-qcom firmware-htc-m8qlul-venus firmware-htc-m8qlul-wcnss"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+ac64ce00cfdfcc753340852aa0813fdc63b5df8e0f00aa41494c304c23e2d7724efcf61de401e4368aef08542c50786d31847833fb29ebc2b4b4b37a254f6d78  deviceinfo
+"

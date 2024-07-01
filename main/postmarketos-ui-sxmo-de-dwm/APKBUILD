@@ -1,0 +1,54 @@
+# Reference: https://postmarketos.org/uipkg
+# Maintainer: Willow Barraco <contact@willowbarraco.fr>
+# Co-Maintainer: Anjandev Momi <anjan@momi.ca>
+# Co-Maintainer: Maarten van Gompel <proycon@anaproy.nl>
+# Co-Maintainer: Peter John Hartman <peterjohnhartman@gmail.com>
+pkgname=postmarketos-ui-sxmo-de-dwm
+pkgver=1.15.0
+pkgrel=3
+pkgdesc="Simple Mobile: Mobile environment based on SXMO and running on dwm"
+url="http://sr.ht/~mil/Sxmo"
+# riscv64: builder currently stuck, libphonenumber needs rebuild
+arch="noarch !armhf !riscv64"
+license="MIT"
+depends="
+	postmarketos-base-ui
+	postmarketos-base-ui-networkmanager
+
+	sxmo-common
+	sxmo-utils-dwm
+	sxmo-utils-audio-bluetooth
+
+	tinydm-openrc
+	modemmanager-openrc
+	networkmanager-openrc
+	bluez-openrc
+
+	conky<=1.20.1-r0
+	"
+install="
+	$pkgname.post-install
+	$pkgname.post-upgrade
+	"
+_pmb_recommends="
+	w3m
+	sfeed
+
+	adwaita-icon-theme
+	clickclack
+	firefox-esr
+	font-noto
+	font-noto-emoji
+	mobile-config-firefox
+	postmarketos-artwork-wallpapers
+	postmarketos-default-camera
+	ttyescape
+	xcalc
+	"
+provides="postmarketos-ui-sxmo"
+provider_priority=5
+options="!check pmb:systemd-never"
+
+package() {
+	mkdir -p "$pkgdir"
+}

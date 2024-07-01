@@ -1,0 +1,73 @@
+# Reference: <https://postmarketos.org/mainline>
+# Kernel config based on: arch/arm64/configs/defconfig
+# Maintainer: Ferass El Hafidi <funderscore@postmarketos.org>
+# Co-Maintainer: exkc <exxxxkc@getgoogleoff.me>
+pkgname=linux-postmarketos-amlogic
+pkgver=6.8.4
+pkgrel=2
+pkgdesc="Mainline kernel for Amlogic devices"
+arch="aarch64"
+_carch="arm64"
+_flavor=postmarketos-amlogic
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+"
+makedepends="
+	bash
+	bc
+	bison
+	devicepkg-dev
+	flex
+	openssl-dev
+	perl
+	gmp-dev
+	mpc1-dev
+	mpfr-dev
+	findutils
+	postmarketos-installkernel
+	gzip
+"
+_config="config-$_flavor.$arch"
+source="
+	$pkgname-$pkgver.tar.xz::https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/linux-$pkgver.tar.xz
+	$_config
+	0001-ARM64-dts-meson-gxl-add-support-for-the-Xiaomi-Mi-Bo.patch
+	0002-add-x96-mini-support.patch
+	0003-add-initial-support-for-zte-b860hv5.patch
+	"
+builddir="$srcdir/linux-$pkgver"
+
+prepare() {
+	default_prepare
+	cp -v "$srcdir"/$_config .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+	make install modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_PATH="$pkgdir"/boot \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_DTBS_PATH="$pkgdir/boot/dtbs"
+
+	install -D "$builddir"/include/config/kernel.release \
+				"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+}
+
+sha512sums="
+fbc834f3f0af9557f17eebc65d9a8f9dc47ff28489f59e83233172e42a0262746dec1b6adfe431fc6eaf202e7c6e8912f621aef96863d410f2d5ce7bd122b46e  linux-postmarketos-amlogic-6.8.4.tar.xz
+b7ee12a849d55da6e6ef8a5545f421e40b1848d20ac9c675ed86a0951c2e22064b5e0911207d3cd4bad15fcaf2b823433bdc8a95ef1ae4fdbfe55a79e87f9ca4  config-postmarketos-amlogic.aarch64
+2c40c1c32eec37c33034f7c11a0423ce6a752cfb98bab38198a64c20f24545436c3a53f0d50c60236518585d42489314123636395242b3d013d51d65f1977a51  0001-ARM64-dts-meson-gxl-add-support-for-the-Xiaomi-Mi-Bo.patch
+4538994c7d3bbb0c4740e8ce108b6838618be239a549e407ca239f3ceca8eed29b5a9ca75d162567dbc06b13ac7caacc61ebf55b247ce6fe122fecc7e5b275d5  0002-add-x96-mini-support.patch
+222e7c12dbeb931f325b7d4a306c2f1e835992b5503ba3ab387a0b006e0fb2226291d93f32aec8ac7b2f6cf15704f20ef3285bb9bafe7374b11a034639d786ef  0003-add-initial-support-for-zte-b860hv5.patch
+"

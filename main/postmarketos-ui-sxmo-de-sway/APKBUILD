@@ -1,0 +1,60 @@
+# Reference: https://postmarketos.org/uipkg
+# Maintainer: Willow Barraco <contact@willowbarraco.fr>
+# Co-Maintainer: Anjandev Momi <anjan@momi.ca>
+# Co-Maintainer: Maarten van Gompel <proycon@anaproy.nl>
+# Co-Maintainer: Peter John Hartman <peterjohnhartman@gmail.com>
+pkgname=postmarketos-ui-sxmo-de-sway
+pkgver=1.15.0
+pkgrel=3
+pkgdesc="Simple Mobile: Mobile environment based on SXMO and running on sway"
+url="http://sr.ht/~mil/Sxmo"
+# riscv64: builder currently stuck, libphonenumber needs rebuild
+arch="noarch !armhf !riscv64"
+license="MIT"
+depends="
+	postmarketos-base-ui
+	postmarketos-base-ui-networkmanager
+
+	sxmo-common
+	sxmo-utils-sway
+	sxmo-utils-audio-bluetooth
+
+	seatd-openrc
+	tinydm-openrc
+	modemmanager-openrc
+	networkmanager-openrc
+	bluez-openrc
+
+	conky<=1.20.1-r0
+	"
+install="
+	$pkgname.post-install
+	$pkgname.post-upgrade
+	"
+_pmb_groups="
+	seat
+	"
+_pmb_recommends="
+	w3m
+	sfeed
+
+	adwaita-icon-theme
+	clickclack
+	firefox-esr
+	font-noto
+	font-noto-emoji
+	imv
+	mobile-config-firefox
+	postmarketos-artwork-wallpapers
+	postmarketos-default-camera
+	postprocessd
+	ttyescape
+	"
+provides="postmarketos-ui-sxmo"
+provider_priority=10
+options="!check pmb:systemd-never"
+
+package() {
+	mkdir -p "$pkgdir"
+	mkdir -p "$pkgdir"/etc/sway/config.d
+}

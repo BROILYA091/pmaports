@@ -1,0 +1,60 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-oneplus-instantnoodlep
+pkgdesc="OnePlus 8 Pro"
+pkgver=1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	mkbootimg
+	postmarketos-base
+"
+makedepends="
+	devicepkg-dev
+	dtc
+"
+subpackages="
+	$pkgname-kernel-downstream:kernel_downstream
+	$pkgname-kernel-mainline:kernel_mainline
+	$pkgname-nonfree-firmware:nonfree_firmware
+"
+source="
+	deviceinfo
+	sm8250-oneplus-instantnoodlep-empty.dts
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+kernel_downstream() {
+	pkgdesc="Downstream kernel (not recommended, for debugging purposes)"
+	depends="linux-oneplus-instantnoodlep"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+kernel_mainline() {
+	pkgdesc="Mainline kernel (recommended)"
+	depends="linux-postmarketos-qcom-sm8250"
+
+	dtc -O dtb -o "$srcdir/dtbo.img" -I dts "$srcdir/sm8250-oneplus-instantnoodlep-empty.dts"
+	install -Dm644 "$srcdir/dtbo.img" "$subpkgdir/boot/dtbo.img"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="Firmware for OnePlus 8 Pro"
+	depends="firmware-oneplus-instantnoodlep"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+808c54b0bdae4ed99a4f2237b926ff583e88833f7193dd8cb268cafef17a444d89f49536fae513e8d368e00e6e36ff34d53c139b7e8fd235eddf3a8d0fcaf10e  deviceinfo
+06269dcbd405a18576a476bb976d39bcf91e8c7885a87716f510d66abc2ffe3bfabe56c286ad6fc88878de07427e58965ac833ac0e8cfa7ad393c2fa3b535c88  sm8250-oneplus-instantnoodlep-empty.dts
+"

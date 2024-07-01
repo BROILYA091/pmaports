@@ -1,0 +1,67 @@
+From 6ba4cf77357e5d583ef3709ecfb6f9192411b156 Mon Sep 17 00:00:00 2001
+From: Clayton Craft <clayton@craftyguy.net>
+Date: Fri, 6 Oct 2023 11:51:21 -0700
+Subject: [PATCH 1/2] meson: minimal configure for building systemd-boot
+
+Notes:
+    - toggling all ENABLED_* things off saves a ton of configure
+      time
+    - Removing capability.h, so that cross compiling doesn't fail
+      because that header isn't installed
+    - Set libcap and libmount to required=false, they aren't needed for
+      building the bootloader, and they complicate cross compilation
+---
+ meson.build | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 7419e2b0b0..9e85bbc9ec 100644
+--- a/meson.build
++++ b/meson.build
+@@ -719,9 +719,6 @@ conf.set('GPERF_LEN_TYPE', gperf_len_type,
+ 
+ ############################################################
+ 
+-if not cc.has_header('sys/capability.h')
+-        error('POSIX caps headers not found')
+-endif
+ foreach header : ['crypt.h',
+                   'linux/memfd.h',
+                   'linux/vm_sockets.h',
+@@ -1016,7 +1013,7 @@ if not libcrypt.found()
+         # fallback to use find_library() if libcrypt is provided by glibc, e.g. for LibreELEC.
+         libcrypt = cc.find_library('crypt')
+ endif
+-libcap = dependency('libcap')
++libcap = dependency('threads', required : false)
+ 
+ # On some architectures, libatomic is required. But on some installations,
+ # it is found, but actual linking fails. So let's try to use it opportunistically.
+@@ -1124,7 +1121,7 @@ else
+ endif
+ 
+ libmount = dependency('mount',
+-                      version : fuzzer_build ? '>= 0' : '>= 2.30')
++                      version : fuzzer_build ? '>= 0' : '>= 2.30', required : false)
+ 
+ libfdisk = dependency('fdisk',
+                       version : '>= 2.32',
+@@ -1807,6 +1804,15 @@ endif
+ want_ukify = get_option('ukify').require(python_39, error_message : 'Python >= 3.9 required').allowed()
+ conf.set10('ENABLE_UKIFY', want_ukify)
+ 
++foreach key : conf.keys()
++        if key.startswith('ENABLE_')
++                conf.set10(key, false)
++        endif
++endforeach
++
++conf.set10('ENABLE_EFI', true)
++conf.set10('ENABLE_BOOTLOADER', true)
++
+ ############################################################
+ 
+ check_version_history_py = find_program('tools/check-version-history.py')
+-- 
+2.43.0
+

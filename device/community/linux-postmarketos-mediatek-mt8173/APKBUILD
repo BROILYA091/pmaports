@@ -1,0 +1,76 @@
+# Maintainer: Adam Thiede <me@adamthiede.com>
+# Co-Maintainer: Jenneron <jenneron@protonmail.com>
+pkgname=linux-postmarketos-mediatek-mt8173
+pkgver=6.9.6
+pkgrel=0
+pkgdesc="Mainline kernel fork for Mediatek MT8173 devices"
+arch="aarch64"
+_carch="arm64"
+_flavor="${pkgname#linux-}"
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+"
+makedepends="
+	bash
+	bison
+	findutils
+	flex
+	openssl-dev
+	perl
+	postmarketos-installkernel
+	gmp-dev
+	mpc1-dev
+	mpfr-dev
+	xz
+"
+
+# Source
+_config="config-$_flavor.$arch"
+case $pkgver in
+	*.*.*)	_kernver=${pkgver%.0};;
+	*.*)	_kernver=$pkgver;;
+esac
+source="
+	https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${pkgver//_/-}.tar.xz
+	$_config
+	fix-mmc1-speed.patch
+	fix-mmc-order.patch
+	fix-spi-nor-max-frequency.patch
+"
+builddir="$srcdir/linux-${_kernver//_/-}"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/config-$_flavor.$CARCH" .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+	make zinstall modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_PATH="$pkgdir"/boot \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_DTBS_PATH="$pkgdir/boot/dtbs"
+	rm -f "$pkgdir"/lib/modules/*/build "$pkgdir"/lib/modules/*/source
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="
+58ff65fde9a1e22678dc70e9da900f479c5fae0bc87056f89e2919603e0f56016131f2d1c020ec889eb2a4cfd7ff22f1feadedc3cab76852ef19bed0ccf9ab8a  linux-6.9.6.tar.xz
+caabd801e8a0b4f8535085f2661c8363e8cded72bc87128b57245c4aab9f5dd17107ef8e3b982e96fc2ad6ce58b02ec252134d661c46246a8e107bf3d3cb88b3  config-postmarketos-mediatek-mt8173.aarch64
+4b499c1fbf53631cffd6fa7299643dc744e0e2187f71804664b02f05296162b42e3f76aa0d8c688cecb43a8bcd41ec92991c98287951292260237b828dcca710  fix-mmc1-speed.patch
+c86f8dfc32165a32381d45a4c8b6811ebf43f01b5d8a48fbe227cf5084cfefe24b32264c1c150cb49115db4759a2d21ad48b37dcaac78367d226e9cc2a5ba849  fix-mmc-order.patch
+caf48ac0f77661153ee94c7de4931baca135a69a97e93f01ad8f276b4a9944e077d7214c117450943cca07990c773661f79718cb0c2ff7c5789c93d37afb26de  fix-spi-nor-max-frequency.patch
+"

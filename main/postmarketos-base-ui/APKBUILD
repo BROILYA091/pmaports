@@ -1,0 +1,283 @@
+# Maintainer: Clayton Craft <clayton@craftyguy.net>
+pkgname=postmarketos-base-ui
+pkgver=25
+pkgrel=0
+pkgdesc="Meta package for minimal postmarketOS UI base"
+url="https://postmarketos.org"
+arch="noarch"
+license="GPL-3.0-or-later"
+depends="
+	chrony
+	dbus
+	font-dejavu
+	haveged
+	nftables
+	pipewire
+	postmarketos-artwork-icons
+	postmarketos-base
+	shadow
+	tzdata
+	util-linux
+	wireless-regdb
+	wireplumber
+	"
+_pmb_recommends="font-twemoji"
+subpackages="
+	$pkgname-audio-none:_audio_none
+	$pkgname-audio-pipewire:_audio_pipewire
+	$pkgname-audio-pulseaudio:_audio_pulseaudio
+	$pkgname-bluez
+	$pkgname-bluez-obexd:_obexd
+	$pkgname-elogind
+	$pkgname-flatpak
+	$pkgname-networkmanager-usb-tethering:_usb_tethering
+	$pkgname-networkmanager
+	$pkgname-openrc-settingsd:_openrc_settingsd
+	$pkgname-qt-tweaks:qt_tweaks
+	$pkgname-qt-wayland:qt_wayland
+	$pkgname-tinydm
+	$pkgname-wifi-iwd:iwd
+	$pkgname-wifi-wpa_supplicant:wpa_supplicant
+	$pkgname-x11
+	postmarketos-default-camera:_default_camera
+	"
+install="$pkgname.post-install $pkgname.post-upgrade"
+replaces="
+	chrony
+	wpa_supplicant-openrc
+	postmarketos-base
+	"
+replaces_priority=100  # leave plenty for alpine
+
+_source644="
+	etc/chrony/chrony.conf
+	etc/elogind/logind.conf
+	etc/conf.d/bluetooth
+	etc/conf.d/openrc-settingsd
+	etc/conf.d/tinydm
+	etc/conf.d/wpa_supplicant
+	etc/pulse/default.pa.d/postmarketos.pa
+	etc/skel/.profile
+	etc/sleep-inhibitor.conf
+	etc/X11/Xwrapper.config
+	usr/lib/NetworkManager/conf.d/50-hostname-mode.conf
+	usr/lib/NetworkManager/conf.d/50-iwd.conf
+	usr/lib/NetworkManager/conf.d/50-random-mac.conf
+	usr/lib/NetworkManager/conf.d/50-tethering.conf
+	usr/lib/NetworkManager/conf.d/50-use-dnsmasq.conf
+	usr/share/wireplumber/wireplumber.conf.d/50-bluetooth.conf
+"
+_source600="
+	usr/lib/NetworkManager/system-connections/USB_Networking.nmconnection
+"
+_source755="
+	etc/tinydm.d/env-wayland.d/50-firefox-wayland.sh
+	etc/tinydm.d/env-wayland.d/50-sdl-wayland.sh
+	usr/lib/NetworkManager/dispatcher.d/50-dns-filter.sh
+	usr/lib/NetworkManager/dispatcher.d/50-tethering.sh
+	etc/profile.d/qt-mobile-controls.sh
+	etc/profile.d/qt-wayland.sh
+	"
+
+# Avoid filename based checksum conflicts by including the whole path.
+flatpath() {
+	local i
+	for i in $@; do
+		echo "rootfs-$i" | sed s./.-.g
+	done
+}
+source="$(flatpath $_source644 $_source600 $_source755)"
+
+_pmb_select="postmarketos-base-ui-wifi"
+package() {
+	# wifi and audio backends are provided by a subpackage in this APKBUILD,
+	# and it won't exist when this is evaluated at the top level. It's moved
+	# into this function to work around it.
+	depends="$depends postmarketos-base-ui-wifi postmarketos-base-ui-audio"
+
+	local i
+	for i in $_source644; do
+		install -Dm644 "$srcdir/$(flatpath "$i")" "$pkgdir/$i"
+	done
+	for i in $_source600; do
+		install -Dm600 "$srcdir/$(flatpath "$i")" "$pkgdir/$i"
+	done
+	for i in $_source755; do
+		install -Dm755 "$srcdir/$(flatpath "$i")" "$pkgdir/$i"
+	done
+}
+
+x11() {
+	install_if="$pkgname=$pkgver-r$pkgrel xorg-server"
+	depends="
+		libinput
+		xf86-input-libinput
+		xf86-video-fbdev"
+	provides="postmarketos-base-x11=$pkgver-r$pkgrel"
+	amove etc/X11/Xwrapper.config
+}
+
+bluez() {
+	install_if="$pkgname=$pkgver-r$pkgrel bluez-openrc"
+
+	amove etc/conf.d/bluetooth
+}
+
+elogind() {
+	install_if="$pkgname=$pkgver-r$pkgrel elogind"
+	depends="sleep-inhibitor !systemd-logind"
+	install="$subpkgname.post-install"
+	replaces="
+		elogind
+		sleep-inhibitor
+		"
+	provides="postmarketos-base-elogind=$pkgver-r$pkgrel"
+
+	amove etc/elogind/logind.conf
+	amove etc/sleep-inhibitor.conf
+}
+
+_openrc_settingsd() {
+	install_if="$pkgname=$pkgver-r$pkgrel openrc-settingsd-openrc"
+	install="$subpkgname.post-install $subpkgname.post-upgrade"
+	replaces="openrc-settingsd-openrc"
+	amove etc/conf.d/openrc-settingsd
+}
+
+tinydm() {
+	install_if="$pkgname=$pkgver-r$pkgrel tinydm-openrc"
+	replaces="tinydm-openrc"
+	provides="postmarketos-base-tinydm=$pkgver-r$pkgrel"
+	amove etc/conf.d/tinydm
+	amove etc/tinydm.d/env-wayland.d/50-firefox-wayland.sh
+	amove etc/tinydm.d/env-wayland.d/50-sdl-wayland.sh
+}
+
+_obexd() {
+	install_if="$pkgname=$pkgver-r$pkgrel bluez-obexd"
+	replaces="bluez-obexd"
+	depends="obex-capabilities"
+	mkdir -p "$subpkgdir"
+}
+
+_usb_tethering() {
+	install_if="$pkgname-networkmanager=$pkgver-r$pkgrel"
+	replaces="$pkgname-networkmanager"
+
+	amove usr/lib/NetworkManager/conf.d/50-tethering.conf
+	amove usr/lib/NetworkManager/dispatcher.d/50-tethering.sh
+	amove usr/lib/NetworkManager/system-connections/USB_Networking.nmconnection
+}
+
+networkmanager() {
+	depends="
+		busctl
+		dnsmasq-dnssec-dbus>=2.90-r1
+		gojq
+		networkmanager
+		networkmanager-cli
+		networkmanager-tui
+		networkmanager-wifi
+		networkmanager-wwan
+		networkmanager-dnsmasq"
+	amove usr/lib/NetworkManager/conf.d/50-hostname-mode.conf
+	amove usr/lib/NetworkManager/conf.d/50-random-mac.conf
+	amove usr/lib/NetworkManager/conf.d/50-use-dnsmasq.conf
+	amove usr/lib/NetworkManager/dispatcher.d/50-dns-filter.sh
+}
+
+_default_camera() {
+	# dummy package for camera app, packages can install_if on this to install
+	# the appropriate camera app for that device/UI
+	mkdir "$subpkgdir"
+}
+
+qt_tweaks() {
+	amove etc/profile.d/qt-mobile-controls.sh
+}
+
+qt_wayland() {
+	amove etc/profile.d/qt-wayland.sh
+}
+
+wpa_supplicant() {
+	pkgdesc="Use wpa_supplicant as the WiFi backend."
+	depends="wpa_supplicant"
+	install="$subpkgname.post-install $subpkgname.post-upgrade"
+	replaces="wpa_supplicant-openrc"
+	provides="postmarketos-base-ui-wifi=$pkgver-r$pkgrel"
+	provider_priority=100
+
+	amove etc/conf.d/wpa_supplicant
+}
+
+iwd() {
+	pkgdesc="Use iwd as the WiFi backend (but may not work with all devices)"
+	depends="iwd"
+	install="$subpkgname.post-install $subpkgname.post-upgrade"
+	provides="postmarketos-base-ui-wifi=$pkgver-r$pkgrel"
+	# Lower than wpa_supplicant for now, see:
+	# https://gitlab.com/postmarketOS/pmaports/-/issues/1379
+	provider_priority=90
+
+	amove usr/lib/NetworkManager/conf.d/50-iwd.conf
+}
+
+_audio_none() {
+	pkgdesc="Do not install any audio backend."
+	provides="postmarketos-base-ui-audio=$pkgver-r$pkgrel"
+	provider_priority=10
+
+	mkdir "$subpkgdir"
+}
+
+_audio_pipewire() {
+	pkgdesc="Use pipewire as the audio backend. (but may not work with all devices)"
+	depends="pipewire-alsa pipewire-pulse pipewire-spa-bluez"
+	provides="postmarketos-base-ui-audio=$pkgver-r$pkgrel"
+	provider_priority=90
+
+	amove usr/share/wireplumber/wireplumber.conf.d/50-bluetooth.conf
+}
+
+_audio_pulseaudio() {
+	pkgdesc="Use pulseaudio as the audio backend."
+	depends="alsa-plugins-pulse pulseaudio pulseaudio-alsa pulseaudio-utils !pipewire-pulse"
+	provides="postmarketos-base-ui-audio=$pkgver-r$pkgrel"
+	provider_priority=100
+
+	amove etc/pulse/default.pa.d/postmarketos.pa
+}
+
+flatpak() {
+	install_if="$pkgname=$pkgver-r$pkgrel flatpak"
+	install="$subpkgname.post-install"
+
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+e5d049db1d82c510bab9246208b51b8ec2711d008d67792fc10d4c0b65ed4dece7b5ae3c3dd28a8539d177b6849c1f921cb9fef3d2c7bee0355451f7b4757ec6  rootfs-etc-chrony-chrony.conf
+8d2c54fe3ca62c62f8337fb6be28479d0e02ea63f32abae81907f2768631e65c9e17485f8bc0854a013377f729b06dd1873e2b75f86f657ece866d00aecbbdb4  rootfs-etc-elogind-logind.conf
+b841282b96110ec59a7aa539db0737327b09549d55c78dc4b2c3b28b4a6ad1facf015b3175cb6d3a38f13e47aa6314ef3dc1514a4e60dd653a97409ec54ba706  rootfs-etc-conf.d-bluetooth
+49fb494b659fe0149a93eafe109609acce6a470bb8acea160638d07e0e4b11af2544f34549d5ef2deb2914a7ef13d0d470b04ad62981f14f96999af02a5f24cf  rootfs-etc-conf.d-openrc-settingsd
+44e4283c6f77de83915977dd3bc2d8e2d96b3ed6cc68d3cc156304359ae649b5a8b0bac843e517ec6faa2066dd43ba85e313899b1eda04862f864fb9eb508aa0  rootfs-etc-conf.d-tinydm
+fe0651904c1f40ffa67d83daca190af199f63247e53642a59a1e1147cd06776fcf20b7b2fcc5373783d50b8bd6ce8d1354c8e5f4d582d319727b9ceefd1e8e16  rootfs-etc-conf.d-wpa_supplicant
+6c516635a61fbaa93102f02301a75070a91de837456b07a50e24a9e0ee5dac785087d4a8f78906807719ebf6f0124127383441cccf00475d9a91d3dbaf9d4d81  rootfs-etc-pulse-default.pa.d-postmarketos.pa
+90b30cbea660ef6cd4c0461b6935de0cd63a84a1a40edb24348a83044c97935b974bd8bafda9cd558e92d3eb69e22c5ccf55483b80f839e24f0eb57ae2df6fe3  rootfs-etc-skel-.profile
+6b9c7bb73213187eb9ca8a94109b2b816f50c1158c90fec2e92b373864280d67741589e5bfbab8810945f031d2f4b535aad78a72e46e52ea50be5b85324da381  rootfs-etc-sleep-inhibitor.conf
+cac604e25c46e695dd30bd5a10cfd2d69595fcc3bc290096ac94b76b10834d591ea6576afb79c46b5da492a1dbf8660cf87b6110cd39937e15237bc74fa7a5c6  rootfs-etc-X11-Xwrapper.config
+3c9ae7415f4891bee8595166ed6a42cb577a837f741c6b5409d193558626348b41516888a01d0c4895282c5f4e9a1ff838c19712888750b2ef68429bb4b42ee3  rootfs-usr-lib-NetworkManager-conf.d-50-hostname-mode.conf
+439615745d5be0d1ab6801cfbf960a31b12da30bf5df64ba2914ff32dae9e650595d7f96e66f5dff6308f092de1f746277ea7f4e701888a22571f7c119b7bf0d  rootfs-usr-lib-NetworkManager-conf.d-50-iwd.conf
+d4b4c4fed2dee7266f6a87ae266691377593014943e2953e4cd87a59f3110f25bfb5f3f866cc843519f628695e4df7602bfdcd3d79f2c2cd6e8256535c33b038  rootfs-usr-lib-NetworkManager-conf.d-50-random-mac.conf
+6507eb31cdd694a7db0280246433118a650bf5d99fbe639f967ae2d95945429a7e03ca6feb5bb6e7b9fb14fcec21e13e51209a79edd0041e77b5bf76b129ed6f  rootfs-usr-lib-NetworkManager-conf.d-50-tethering.conf
+900554534191fa0797064d35350934cdd8af59f30f0ae7d8ec63c2e11c44a16c643d3024b6543940488cd590fec1d392548bcaacc3be88cddff90f69b17ece07  rootfs-usr-lib-NetworkManager-conf.d-50-use-dnsmasq.conf
+92930f027626825b027f585a9be180f8a6ebae6dc44d2cf8f9d43cce00db8cbb43c33fc341fe382abacb832ea1b6414dc4c8129d265b0258d096599b2e206a93  rootfs-usr-share-wireplumber-wireplumber.conf.d-50-bluetooth.conf
+1b8add60574ec4644197cb93263c0653325c2e88e03673de918be5fb3280c7b81e8e97dce498850a07f2f3307771c44f3c876922e5cbd5207523ede31816296f  rootfs-usr-lib-NetworkManager-system-connections-USB_Networking.nmconnection
+d1ddd43489e6016e3ffd716027ed2bae4a2ab5f213118bdbcb96750e267ab7c0367cd0e0e386300aa5550352653144f5caeddd790621fe0879f83ca1995bb65c  rootfs-etc-tinydm.d-env-wayland.d-50-firefox-wayland.sh
+ecaa57d033a119a53a6574c27636b7c89d659d75ea48a973a6a4ff6f90e5d07202529fd489bfc9dfc7430f5b60f40612f6d5c06f7fab47e681b0a3112a874058  rootfs-etc-tinydm.d-env-wayland.d-50-sdl-wayland.sh
+52d58729cbf3cd0318de633e8a8da74c7af246025a8c5746d5e7c854bdabbf27fa07d8558ffec92a30491cdb687fe4414de5adcddd7da5be3510f918fba463a2  rootfs-usr-lib-NetworkManager-dispatcher.d-50-dns-filter.sh
+9dcf698c729e6a3d05201aa74c1618169f344f9c973e6a074591b0b4f352470235decbbc658393f44c62b6b1508c68f3c1787a640f219dbcc136e9335f3994c4  rootfs-usr-lib-NetworkManager-dispatcher.d-50-tethering.sh
+bf8db527c49fa724e640a90269ba2648a2555f5867b2adbfbd88d1f685261f757339757c09ee08f590c76de4bd3d0c73a47dea9bd340644dd4707e76152cefd1  rootfs-etc-profile.d-qt-mobile-controls.sh
+6e193eca3961a78d47b4656892eae34d019d9317a255a201f5ea61e3300caff04c526a27cd98d0edc072b36e3eaf3a1768f4cd27c5e2be8b19c167d535c820a6  rootfs-etc-profile.d-qt-wayland.sh
+"

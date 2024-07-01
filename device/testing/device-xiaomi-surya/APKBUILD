@@ -1,0 +1,57 @@
+# Maintainer: Danila Tikhonov <danila@jiaxyga.com>
+# Co-Maintainer: David Wronek <david@mainlining.org>
+# Reference: <https://postmarketos.org/devicepkg>
+
+pkgname=device-xiaomi-surya
+pkgdesc="Xiaomi POCO X3 NFC"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-postmarketos-qcom-sm7150
+	make-dynpart-mappings
+	mkbootimg
+	postmarketos-base
+	soc-qcom-sm7150
+"
+makedepends="devicepkg-dev"
+source="
+	deviceinfo
+	modules-initfs
+"
+
+subpackages="
+	$pkgname-nonfree-firmware:nonfree_firmware
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="Firmware for Modem, WiFi, Touchscreen, etc."
+	depends="
+		firmware-xiaomi-surya-adsp
+		firmware-xiaomi-surya-cdsp
+		firmware-xiaomi-surya-initramfs
+		firmware-xiaomi-surya-ipa
+		firmware-xiaomi-surya-modem
+		firmware-xiaomi-surya-touchscreen
+		firmware-xiaomi-surya-venus
+		firmware-xiaomi-surya-wlan
+		soc-qcom-sm7150-nonfree-firmware
+		"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+592930b6f0f1002cef77f88df36c7751362c188c3339167d8e28ed48bea9ed5a9e900fe52034db45ce7e11404f9baac02b171992a7b07b5c83fa2aed97b6c1e8  deviceinfo
+6d86b9211d4adf237ef2961f304655331287c186bba56b1af32185401b01b506949557ce6e70dc70e3c9997b4f5684c9f4cdfd11c79ccbc7a869147b6fb9bb53  modules-initfs
+"

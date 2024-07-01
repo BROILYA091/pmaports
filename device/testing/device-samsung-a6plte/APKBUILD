@@ -1,0 +1,58 @@
+# Reference: <https://postmarketos.org/devicepkg>
+
+pkgname=device-samsung-a6plte
+pkgdesc="Samsung Galaxy A6+ (2018)"
+pkgver=2
+pkgrel=1
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-postmarketos-qcom-msm8953
+	lk2nd-msm8953
+	mkbootimg
+	postmarketos-base
+	soc-qcom-msm8916
+"
+makedepends="devicepkg-dev"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware $pkgname-phosh"
+source="
+	deviceinfo
+	modules-initfs
+	gpu-nobin.sh
+	phoc.ini
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+
+	install -D -m644 "$srcdir"/gpu-nobin.sh \
+		"$pkgdir"/etc/profile.d/gpu-nobin.sh
+}
+
+nonfree_firmware() {
+	pkgdesc="WiFi, Bluetooth, ADSP, Venus and GPU Firmware"
+	depends="
+		firmware-samsung-a6plte
+		linux-firmware-qcom
+		msm-firmware-loader"
+	mkdir "$subpkgdir"
+}
+
+phosh() {
+	install_if="$pkgname=$pkgver-r$pkgrel phosh"
+	install -Dm644 "$srcdir"/phoc.ini \
+		"$subpkgdir"/etc/phosh/phoc.ini
+}
+
+sha512sums="
+a76b57488aa3835c307aa5c8bb444420c67368111b2fcfcf4c2c3ff16412c18d82ee16cead8211b024d5994c34381562898cc8050b132e15d29437eab3bf5e7a  deviceinfo
+e178cc887ce85bd0fd6eb4c8cb8a4869e1d82c5cb4549c7ea12b2ae8a13b35ffa85dd8d529b8e8612710379687a42a6c2c135857c0c537cf7db99ddd955e2b9f  modules-initfs
+bea40516cf51b4ad0609cc21ca56c19eb9cb2b1be45cddf486264d9c526469f1abad313a95a4f938ccbd0c023d08884aefe8d850746a97075999de11b4a2ff4c  gpu-nobin.sh
+38409d4ce48db4624539dbfd695d3c6e1596a29fd7c3004a41368b28cba646495d05360420ad728f82c63d6ddeeca71d09944df06ebaca120aedd9cc2b436eb3  phoc.ini
+"

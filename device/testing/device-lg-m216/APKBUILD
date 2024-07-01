@@ -1,0 +1,38 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-lg-m216
+pkgdesc="LG K10 (m216)"
+pkgver=7
+pkgrel=1
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="postmarketos-base mkbootimg linux-postmarketos-qcom-msm8916
+	 soc-qcom-msm8916 soc-qcom-msm8916-rproc"
+makedepends="devicepkg-dev"
+source="deviceinfo modules-initfs"
+subpackages="
+	$pkgname-nonfree-firmware:nonfree_firmware
+"
+_pmb_select="soc-qcom-msm8916-rproc"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="GPU/WiFi/BT/Modem/Video firmware"
+	depends="firmware-qcom-adreno-a300 msm-firmware-loader
+		 firmware-qcom-msm8916-wcnss firmware-lg-m216-wcnss-nv
+		 firmware-qcom-msm8916-venus"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+3e16e48fa102db23eeb6da6da4b57a40a48a3277c28a340f994a54763db21df4e44892e0884ff38d8eb87b957348d53a1c7604a3b01944dddd3647e35c3380b3  deviceinfo
+d4d77f5db6e361d723c7202bf68342970bc568d6e040b3fba694c5ff0af0eec0a6aaaf582fd6b40a5ab46a26931edacea3cba70e7f6d13be42e9676a5ee06d86  modules-initfs
+"

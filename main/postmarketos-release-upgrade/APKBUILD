@@ -1,0 +1,20 @@
+# Maintainer: Oliver Smith <ollieparaoid@postmarketos.org>
+pkgname=postmarketos-release-upgrade
+pkgver=1.7.0
+pkgrel=0
+pkgdesc="Upgrade from one pmOS release to the next one"
+url="https://gitlab.com/postmarketOS/postmarketos-release-upgrade/"
+source="
+	https://gitlab.com/postmarketOS/postmarketos-release-upgrade/-/archive/$pkgver/postmarketos-release-upgrade-$pkgver.tar.bz2
+"
+arch="noarch"
+license="GPL-3.0-or-later"
+options="!check" # No tests
+
+package() {
+	install -Dm755 upgrade.sh "$pkgdir"/usr/bin/postmarketos-release-upgrade
+}
+
+sha512sums="
+489c0db5cceba40cf68debc9fa366f07424a6fa90540ca67d40b5d21ddc3c6eb93bc9c9897b22c848f38d0455dfb6321f20726088b1ea0328d8677a166486cc7  postmarketos-release-upgrade-1.7.0.tar.bz2
+"

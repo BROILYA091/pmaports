@@ -1,0 +1,31 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-samsung-jxelte
+pkgdesc="Samsung Galaxy J7(2016)"
+pkgver=1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="postmarketos-base postmarketos-base-downstream linux-samsung-jxelte mkbootimg msm-fb-refresher"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="Wifi firmware"
+	depends="firmware-samsung-jxelte"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+d496a683197cec642434f9e588e73dff86d3750d5366dfca0e70fa5e255fd96749649a27e65c01b3d8cf8f09e431ac53a7105e1215a6ae9e4a74596a86a3a537  deviceinfo
+"

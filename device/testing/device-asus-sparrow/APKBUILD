@@ -1,0 +1,50 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-asus-sparrow
+pkgdesc="ASUS ZenWatch 2"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="
+	mkbootimg
+	postmarketos-base
+"
+makedepends="devicepkg-dev"
+subpackages="
+	$pkgname-kernel-downstream:kernel_downstream
+	$pkgname-kernel-mainline:kernel_mainline
+	$pkgname-nonfree-firmware:nonfree_firmware
+	"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+kernel_downstream() {
+	pkgdesc="Downstream kernel"
+	depends="linux-asus-sparrow"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+kernel_mainline() {
+	pkgdesc="Close to mainline kernel"
+	depends="linux-postmarketos-qcom-msm8226"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="Firmware for WiFi, ADSP, etc."
+	depends="firmware-asus-sparrow-adsp firmware-asus-sparrow-wifi"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+4602de536a4fdf37338302be92a6fbe2c5b7ac7c5a526c953e3d174ec54e276794854e3c1f1cd236f6314cc5fc26da932225d12be32c449ce999aa883a44952d  deviceinfo
+"

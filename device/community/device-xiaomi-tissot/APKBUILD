@@ -1,0 +1,39 @@
+# Maintainer: Danila Tikhonov (JIaxyga) <danila@jiaxyga.com>
+# Co-Maintainer: Barnabas Czeman <trabarni@gmail.com>
+# Reference: <https://postmarketos.org/devicepkg>
+
+pkgname=device-xiaomi-tissot
+pkgdesc="Xiaomi Mi A1"
+pkgver=8
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	firmware-qcom-adreno-a530
+	firmware-xiaomi-tissot
+	linux-postmarketos-qcom-msm8953
+	lk2nd-msm8953
+	mkbootimg
+	msm-firmware-loader
+	postmarketos-base
+	qbootctl
+	soc-qcom-msm8953
+	soc-qcom-msm8953-modem
+"
+makedepends="devicepkg-dev"
+source="deviceinfo modules-initfs"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+4ea529e8822f268773e043dec4af4c419803e3220bc0bc85def1c07ee480efd5f33b2f8f74007aaf7d608926048c49d4dfc1d529f6501cebf5aba0f183ac9cd0  deviceinfo
+4284d7c184f364d81a06de962808cb240b713cda11381ddcec5acdfbb4d4962922b64b2f2675ab463961c0510352211ec439a6b9e4ebdc47bf73980133e9626a  modules-initfs
+"

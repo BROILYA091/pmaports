@@ -1,0 +1,64 @@
+# Maintainer: Oliver Smith <ollieparanoid@postmarketos.org>
+# Co-Maintainer: Clayton Craft <clayton@craftyguy.net>
+pkgname=postmarketos-mkinitfs
+pkgver=2.5.0
+pkgrel=0
+pkgdesc="Tool to generate initramfs images for postmarketOS"
+url="https://postmarketos.org"
+depends="
+	boot-deploy>=0.9
+"
+makedepends="go scdoc"
+replaces="mkinitfs"
+
+triggers="$pkgname.trigger=\
+/lib/firmware/*:\
+/usr/lib/systemd/boot:\
+/usr/libexec/pmos-tests-initramfs:\
+/usr/share/deviceinfo:\
+/usr/share/kernel/*:\
+/usr/share/mkinitfs-triggers:\
+/usr/share/mkinitfs/*\
+"
+
+# mkinitfs-vendor-$pkgver.tar.gz: vendored Go deps, is part of the release:
+# https://gitlab.com/postmarketOS/postmarketos-mkinitfs/-/releases
+source="
+	https://gitlab.com/postmarketOS/postmarketos-mkinitfs/-/archive/$pkgver/postmarketos-mkinitfs-$pkgver.tar.gz
+	https://gitlab.com/api/v4/projects/postmarketOS%2Fpostmarketos-mkinitfs/packages/generic/mkinitfs-vendor-$pkgver/$pkgver/mkinitfs-vendor-$pkgver.tar.gz
+	"
+
+install="$pkgname.post-upgrade"
+arch="all"
+license="GPL-2.0-or-later"
+provider_priority=999  # higher priority than Alpine's mkinitfs
+provides="initramfs-generator"
+subpackages="$pkgname-doc"
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+export GOPATH="$srcdir"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+
+prepare() {
+	default_prepare
+	ln -s "$srcdir"/vendor "$builddir"/vendor
+}
+
+build() {
+	unset LDFLAGS  # passed to Go as linker flags, which are invalid
+	make VERSION="$pkgver"
+}
+
+package() {
+	make PREFIX=/usr DESTDIR="$pkgdir" install
+}
+
+check() {
+	go test ./...
+}
+
+sha512sums="
+ae0d83f5cc9f79ed20be31654213ab13c66c317e3b15f0b9a29c66286e58782c5e7c8a34522f9e0573fdc9de06075227aed65df045cfa6df97016884471ad990  postmarketos-mkinitfs-2.5.0.tar.gz
+62aecfccec6f8bbff466969a0961e0fb966e18bff513d8c1e44f3b87916f71d62d035e06706c1af9e4daac75cb8cb170c310c03daf6c731bf6700a8042a1b1ae  mkinitfs-vendor-2.5.0.tar.gz
+"

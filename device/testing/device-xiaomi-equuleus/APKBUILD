@@ -1,0 +1,31 @@
+# Maintainer: Sporos <alexandergp@pm.me>
+# Reference: <https://postmarketos.org/devicepkg>
+
+pkgname=device-xiaomi-equuleus
+pkgdesc="Xiaomi Mi 8 Pro"
+pkgver=1
+pkgrel=5
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-postmarketos-qcom-sdm845
+	mkbootimg
+	postmarketos-base
+	soc-qcom-sdm845
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+028b848fba7732b6efc8abd00f629db658d6a6f59e4fd1838c865df550233d6e1cb83eeaa856dee7569a6c5a5368d83102b7e0854a92b94fba722f041160e8c9  deviceinfo
+"

@@ -1,0 +1,70 @@
+# Maintainer: Clayton Craft <clayton@craftyguy.net>
+# Co-Maintainer: jane400 <jane400@postmarketos.org>
+# Contributor: Konrad Dybcio <konradybcio@kernel.org>
+pkgname=linux-lenovo-21bx
+pkgver=6.9
+pkgrel=1
+_commit="357c0f0c7ad2d7d95a3200b6cfd7bef43299de04"
+pkgdesc="Lenovo ThinkPad X13s kernel fork"
+arch="aarch64"
+_carch="arm64"
+_flavor="lenovo-21bx"
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip
+	!check
+	!tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+	pmb:kconfigcheck-containers
+	pmb:kconfigcheck-uefi
+	"
+makedepends="
+	bash
+	bison
+	findutils
+	flex
+	openssl-dev
+	perl
+	postmarketos-installkernel
+"
+
+# Source
+_repository="linux"
+_config="config-$_flavor.$arch"
+source="
+	$pkgname-$_commit.tar.gz::https://github.com/jhovold/$_repository/archive/$_commit.tar.gz
+	$_config
+"
+builddir="$srcdir/linux-$_commit"
+_outdir="out"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/config-$_flavor.$arch" .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-$_flavor"
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+	make zinstall modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_PATH="$pkgdir"/boot \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_DTBS_PATH="$pkgdir"/boot/dtbs
+	rm -f "$pkgdir"/lib/modules/*/build "$pkgdir"/lib/modules/*/source
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="
+270f2052077ad287aa3fe62de935955aa97cf38d842e8460fab5d68accf3abde299b02fe41287dae46ad8bf927815db0512fe4072a01090e4dd1766ed296f9c3  linux-lenovo-21bx-357c0f0c7ad2d7d95a3200b6cfd7bef43299de04.tar.gz
+9966d82919860316548e4a32a11114853fd991a59a4621b33db1c1478eb6a23f253e2566d2d48e192e0abe4e5dd1dd3c94a154872fe7a4dab0ff284b6d741978  config-lenovo-21bx.aarch64
+"

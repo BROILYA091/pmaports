@@ -1,0 +1,39 @@
+# Maintainer: Ultracoolguy <ultracoolguy@disroot.org>
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-motorola-ocean
+pkgdesc="Motorola Moto G7 Power"
+pkgver=1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-postmarketos-qcom-msm8953
+	lk2nd-msm8953
+	mkbootimg
+	postmarketos-base
+	soc-qcom-msm8916
+"
+makedepends="devicepkg-dev"
+source="deviceinfo modules-initfs"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="Wifi, GPU, modem, and audio firmware"
+	depends="firmware-motorola-ocean"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+6c2c4244319a5c24b888c5c30c28b42a7514c2ffcdddcdb2d87bccb37da1eed6722fa66ff865d4d31855b9d9fca4ab6012532fb65127928a74becb228625d0a1  deviceinfo
+f627d473ccfc01f39ed7b1345c2795af0cd358b4738d202e53fbae07c605d239f9139b034c5a29411bafe368b92a44c756e2bd029246b385d6397f519af8ff7c  modules-initfs
+"

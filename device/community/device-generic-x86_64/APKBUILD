@@ -1,0 +1,63 @@
+# Maintainer: Clayton Craft <clayton@craftyguy.net>
+# Co-Maintainer: Oliver Smith <ollieparanoid@postmarketos.org>
+pkgname=device-generic-x86_64
+pkgdesc="Generic x86_64 system, with EFI"
+pkgver=14
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="x86_64"
+options="!check !archcheck"
+depends="
+	alsa-ucm-conf
+	postmarketos-base
+	systemd-boot
+"
+makedepends="devicepkg-dev"
+source="
+	deviceinfo
+	modules-initfs
+"
+install="$pkgname.post-install $pkgname.post-upgrade"
+subpackages="
+	$pkgname-kernel-edge:kernel_edge
+	$pkgname-kernel-lts:kernel_lts
+"
+_pmb_recommends="
+	firmware-ath6kl
+	firmware-b43xx
+	linux-firmware
+	oem-amd
+	oem-intel
+"
+provides="device-tablet-x64uefi=$pkgver-r$pkgrel device-tablet-x86uefi=$pkgver-r$pkgrel"
+replaces="device-tablet-x64uefi device-tablet-x86uefi"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+kernel_edge() {
+	pkgdesc="Alpine Edge kernel"
+	provides="device-tablet-x64uefi-kernel-edge=$pkgver-r$pkgrel device-tablet-x86uefi-kernel-edge=$pkgver-r$pkgrel"
+	replaces="device-tablet-x64uefi-kernel-edge device-tablet-x86uefi-kernel-edge"
+	depends="linux-edge"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+kernel_lts() {
+	pkgdesc="Alpine LTS kernel"
+	provides="device-tablet-x64uefi-kernel-lts=$pkgver-r$pkgrel device-tablet-x86uefi-kernel-lts=$pkgver-r$pkgrel"
+	replaces="device-tablet-x64uefi-kernel-lts device-tablet-x86uefi-kernel-lts"
+	depends="linux-lts"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+sha512sums="
+e9dfcd70ccfb9a0fdaa0cdc52faf3be96d6de8af8c60a758bb703c515b0648cec4552e0eaf56e5168b0004cd3fc4b28118abb05dad2c581d3579a2e9134862cb  deviceinfo
+e464ef0ad4a4c34d2d53f69c4612b612ea878a77c9efdef69b0f842edf701036c8218809fd63aac286d6a08ae07f39e568199fc3e38d145e716c1723e7215019  modules-initfs
+"

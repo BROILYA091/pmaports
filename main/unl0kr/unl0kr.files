@@ -1,0 +1,11 @@
+/etc/unl0kr.conf
+/etc/unl0kr.conf.d
+/sbin/cryptsetup
+/usr/bin/unl0kr
+/bin/fde-unlock
+/usr/share/libinput/*.quirks
+/bin/udevadm
+/sbin/udevd
+/etc/udev/rules.d
+/lib/udev/rules.d
+/usr/share/X11/xkb

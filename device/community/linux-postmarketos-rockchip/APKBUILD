@@ -1,0 +1,86 @@
+# Maintainer: Quade Curry <qc8086@qc8086.com>
+
+# This is seperate from linux-edge so we can control the release cycle better.
+# If this kernel is updated and fails to boot it's quite hard to recover the
+# rk3399 devices due to the boot order. This kernel also has a kconfig that has
+# more modules built-in that are required for successfully booting on these
+# devices.
+
+# It's important that CONFIG_ROCKCHIP_CDN_DP is _disabled_ because it causes
+# boot failure
+
+pkgname=linux-postmarketos-rockchip
+pkgver=6.2
+pkgrel=14
+pkgdesc="Mainline kernel for rockchip devices"
+arch="aarch64"
+_carch="arm64"
+_flavor="${pkgname#linux-}"
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+	"
+makedepends="
+	bash
+	bison
+	devicepkg-dev
+	findutils
+	flex
+	installkernel
+	openssl-dev
+	perl
+	rsync
+	gzip
+	xz
+	gmp-dev
+	mpc1-dev
+	mpfr-dev
+	"
+
+# Source
+_config="config-$_flavor.$arch"
+case $pkgver in
+	*.*.*)	_kernver=${pkgver%.0};;
+	*.*)	_kernver=$pkgver;;
+esac
+
+source="
+	https://cdn.kernel.org/pub/linux/kernel/v${_kernver%%.*}.x/linux-$_kernver.tar.xz
+	$_config
+"
+builddir="$srcdir/linux-$_kernver"
+
+prepare() {
+	default_prepare
+	REPLACE_GCCH=0 \
+		. downstreamkernel_prepare
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-$_flavor"
+}
+
+package() {
+	downstreamkernel_package "$builddir" "$pkgdir" "$_carch" "$_flavor"
+
+	make -j1 modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_DTBS_PATH="$pkgdir/boot/dtbs"
+
+	gzip -v "$pkgdir"/boot/vmlinuz
+	mv "$pkgdir"/boot/vmlinuz.gz "$pkgdir"/boot/vmlinuz
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="
+a01bee0b968b95183934fe3504516be7ef5811944a061f5aed05ecebaa27b5eb64e33232fd0a8dd622b3c8743bfe462ef7e464d381734d111a0ad6a6d9f66ddd  linux-6.2.tar.xz
+d937ee7e88a6a549398f8ba002590d07386f86bbce67df20325eafd1a0df9e927e8cc6e6a940c021586acb63b3e7c21ea0cbee79820b6059076f7ef3e5f72e41  config-postmarketos-rockchip.aarch64
+"

@@ -1,0 +1,38 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-amazon-biscuit
+pkgdesc="Amazon Echo Dot (2nd gen)"
+pkgver=1
+pkgrel=2
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="
+	linux-amazon-biscuit
+	mtk-mkimage
+	mkbootimg
+	postmarketos-base
+	postmarketos-initramfs-minimal
+"
+makedepends="devicepkg-dev"
+source="
+	deviceinfo
+	led.start
+	led.stop
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+	install -Dm755 "$srcdir"/led.start "$pkgdir"/etc/local.d/led.start
+	install -Dm755 "$srcdir"/led.stop "$pkgdir"/etc/local.d/led.stop
+}
+
+sha512sums="
+1a6195d235d7a5c4a6bb49e2ef99d9f6f5165bbef8a57a26da61c381154d414020962511d1a4a4da2be0a646749fbba7d07823e366246916dc0f9565f9f67af8  deviceinfo
+a72f042f5afdb4d47d22c46906cee4d84a23584bc719bfec99678251a6e7784fdfb67c284ecafd11721f7c90783a93283957c43ad845a1ff586b0610234523a3  led.start
+d10a06899a48a090042047a9b4917604a0d408701f6e15fc559a5f8444d61f91a3b6c201cbdb227ae0f19d1dff3424e40c41e32e2e91f37b9a69f6e0bd67eb30  led.stop
+"

@@ -1,0 +1,35 @@
+# Maintainer: Barnabas Czeman <trabarni@gmail.com>
+pkgname=device-xiaomi-mido
+pkgdesc="Xiaomi Redmi Note 4X"
+pkgver=7
+pkgrel=2
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	firmware-qcom-adreno-a530
+	firmware-xiaomi-mido
+	linux-postmarketos-qcom-msm8953
+	lk2nd-msm8953
+	mkbootimg
+	msm-firmware-loader
+	postmarketos-base
+	soc-qcom-msm8953
+	soc-qcom-msm8953-modem
+"
+makedepends="devicepkg-dev"
+source="deviceinfo modules-initfs"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+22dd70e5730b46bfdb257eb5e577da2d91d72d0335e2f591af66dfb318169ccdf813d800c2c7adb12cbf8063fc35bb33519577cc33b6322104cd52f75e035e99  deviceinfo
+9f534c76689728c3fa699ac8c854ca82815d5158a3675a70ef879ddbf140460977187dc3c1a799dadd0ab53d5a08b6275a1594a7b976eda983f3e78b2738a8be  modules-initfs
+"

@@ -1,0 +1,54 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: Alexey Min <alexey.min@gmail.com>
+pkgname=device-xiaomi-lavender
+pkgdesc="Xiaomi Redmi Note 7"
+pkgver=2
+pkgrel=1
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	firmware-xiaomi-lavender
+	firmware-qcom-adreno-a530
+	mkbootimg
+	msm-firmware-loader
+	postmarketos-base
+	soc-qcom-sdm660
+	soc-qcom-sdm660-rproc
+"
+makedepends="devicepkg-dev"
+subpackages="
+	$pkgname-kernel-boe:kernel_boe
+	$pkgname-kernel-tianma:kernel_tianma
+"
+source="
+	deviceinfo
+	modules-initfs.boe
+	modules-initfs.tianma
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+kernel_boe() {
+	pkgdesc="For Redmi Note 7 with BOE panel"
+	depends="linux-postmarketos-qcom-sdm660"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+kernel_tianma() {
+	pkgdesc="For Redmi Note 7 with Tianma panel"
+	depends="linux-postmarketos-qcom-sdm660"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+sha512sums="
+492367ca81ca84efdd77e4cac921d99d5a152dcbacaa27b9c2194457ebc20074742c627ff1cd65a559e7d4dafb5d0374ef1c9228eaea29ca66e12986df53182b  deviceinfo
+77f0b637ca0d6512da7964425c08f0b8c2d8ac40b784301055fc70769d15989713388dd098ee9ee89520a52ead96283f9898da6d87b6e0e70143ce5859f9b61b  modules-initfs.boe
+2985ce67fe3a5cd4cd03c9c5e7af072174775a97b4d26c40b025a82b33fead69f7cb4ac185db1b7b97d61b02ebdf56c88f77f55d2dd352ac2d7e47394563dbe2  modules-initfs.tianma
+"
